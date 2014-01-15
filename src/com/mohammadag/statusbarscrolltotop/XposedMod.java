@@ -18,6 +18,7 @@ import android.widget.ScrollView;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
@@ -140,7 +141,21 @@ public class XposedMod implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 				case MotionEvent.ACTION_CANCEL:
 				case MotionEvent.ACTION_UP:
 					if (mIsClick) {
-						view.getContext().sendBroadcast(new Intent(INTENT_SCROLL_TO_TOP));
+						try {
+							/* Get NotificationPanelView instance, it subclasses PanelView */
+							Object notificationPanelView =
+									XposedHelpers.getObjectField(param.thisObject, "mNotificationPanel");
+
+							float expandedFraction = (Float) XposedHelpers.callMethod(notificationPanelView,
+									"getExpandedFraction");
+
+							if (expandedFraction < 0.1)
+								view.getContext().sendBroadcast(new Intent(INTENT_SCROLL_TO_TOP));
+						} catch (Throwable t) {
+							XposedBridge.log("StatusBarScrollToTop: Unable to determine expanded fraction: " + t.getMessage());
+							t.printStackTrace();
+							view.getContext().sendBroadcast(new Intent(INTENT_SCROLL_TO_TOP));
+						}
 					}
 					break;
 				case MotionEvent.ACTION_MOVE:
