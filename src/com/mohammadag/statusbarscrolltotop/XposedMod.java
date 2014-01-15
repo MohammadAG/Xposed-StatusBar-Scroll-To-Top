@@ -230,7 +230,5 @@ public class XposedMod implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 		return ((Activity) context).findViewById(android.R.id.content);
 	}
 
-	/* And that's a wrap, here's a fun bug, tapping the status bar while the notification panel is shown
-	 * cause a list to scroll, I'll look into it at some point.
-	 */
+	/* And that's a wrap */
 }
